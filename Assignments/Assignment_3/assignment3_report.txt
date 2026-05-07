@@ -1,0 +1,62 @@
+University of Naples Federico II  
+Department of Economics and Statistics
+Course: Statistical Data Analysis
+Academic Year: 2025-2026
+Professors: Prof. Roberta Siciliano & Prof. Giulia Vannucci
+Student: Mohammad Waliullah Shah  
+Student ID: P37000087
+Assignment 3: Car Price Prediction using Regression Analysis
+
+## Abstract
+This assignment addresses a practical pricing problem in the automobile market: estimating car prices from technical and categorical attributes. I used the CarPrice dataset, which contains 205 observations and 26 original variables, and built a full regression workflow from data exploration to model comparison. The analysis included exploratory plots, correlation checks, feature engineering, and three regression models: Linear Regression, Ridge Regression, and Lasso Regression with cross-validated alpha tuning. The strongest model was Ridge Regression, which achieved the best balance between predictive accuracy and stability on unseen data. The results show that engine and weight-related variables are key price drivers, while some categorical factors and weaker technical indicators contribute less once regularization is applied. From a practical perspective, this kind of model can help a manufacturer like Geely Auto understand what most influences price and design product strategies around those factors.
+
+## 1. Introduction
+Predicting car prices is an important business task because price decisions affect product positioning, sales volume, and profitability. Geely Auto wants to understand how the characteristics of existing cars in the market relate to price so it can make better pricing and design decisions for new models.  
+
+The goal of this assignment is to build a complete regression analysis pipeline: perform EDA, engineer meaningful features, train multiple regression models, and identify the model that generalizes best.
+
+## 2. Dataset and EDA
+The dataset contains 205 observations and 26 variables. During EDA, histograms showed that `price` is right-skewed, which suggests the presence of fewer expensive cars and many mid-range cars. Correlation analysis highlighted strong positive relationships with price for:
+- `enginesize` (0.87)
+- `curbweight` (0.84)
+- `horsepower` (0.81)
+
+Box plots showed outliers in high-end price and performance features. These were kept because they represent real premium cars, not data-entry mistakes.  
+
+Categorical box plots showed clear price differences across body type, drive wheel, and brand groups, confirming that categorical attributes should be included in modeling.
+
+## 3. Feature Engineering
+I extracted `brand` from `CarName` and corrected misspellings such as `vw` and `vokswagen` to `volkswagen`, `porcshce` to `porsche`, `toyouta` to `toyota`, and `maxda` to `mazda`. This matters because brand is a direct market signal and inconsistent spelling splits the same category into multiple groups.  
+
+For encoding, I used label encoding for binary variables (`fueltype`, `aspiration`, `doornumber`, `enginelocation`) and one-hot encoding for nominal variables (`carbody`, `drivewheel`, `enginetype`, `cylindernumber`, `fuelsystem`, `brand`). This avoids imposing fake order on nominal categories.  
+
+I also created `power_to_weight` to capture performance efficiency and applied `log_price = log1p(price)` to reduce skewness and improve linear model behavior.
+
+## 4. Model Building and Results
+Linear Regression was used as the baseline. Ridge was used to control multicollinearity through L2 regularization, and Lasso was used for sparse feature selection through L1 regularization.  
+
+| Model             | R² Train | R² Test | MAE    | RMSE   | Verdict  |
+|-------------------|----------|---------|--------|--------|----------|
+| Linear Regression | 0.969975 | 0.907370 | 0.122326 | 0.158522 | Good fit |
+| Ridge Regression  | 0.960057 | 0.928426 | 0.115276 | 0.139345 | Good fit |
+| Lasso Regression  | 0.947375 | 0.926273 | 0.111074 | 0.141425 | Good fit |
+
+## 5. Discussion
+Multicollinearity means predictors carry overlapping information, which can make plain linear coefficients unstable. Ridge handles this by shrinking coefficients smoothly and improving stability.  
+
+Lasso performed feature selection by setting 38 coefficients to zero, removing variables with weak independent contribution. Examples include `symboling`, `wheelbase`, and several low-impact brand/fuel-system indicators. This makes the model easier to interpret.  
+
+In overfitting analysis, no model crossed the overfitting threshold (`R²_train - R²_test > 0.10`), and all models showed solid test performance. Ridge gave the best generalization balance.  
+
+Coefficient interpretation is straightforward: positive coefficients increase predicted log-price, while negative coefficients decrease it, holding other variables constant.
+
+## 6. Conclusion
+Ridge Regression performed best overall on unseen data. The main price drivers are engine size, horsepower, curb weight, and selected brand/body characteristics.  
+
+For a manufacturer, this analysis shows which specifications most affect market price and helps guide both product configuration and pricing strategy.
+
+## References
+- James, G., Witten, D., Hastie, T., & Tibshirani, R. (2021). *An Introduction to Statistical Learning*. Springer.
+- Hastie, T., Tibshirani, R., & Friedman, J. (2009). *The Elements of Statistical Learning*. Springer.
+- McKinney, W. (2022). *Python for Data Analysis*. O'Reilly Media.
+- Montgomery, D. C., Peck, E. A., & Vining, G. G. (2012). *Introduction to Linear Regression Analysis*. Wiley.
