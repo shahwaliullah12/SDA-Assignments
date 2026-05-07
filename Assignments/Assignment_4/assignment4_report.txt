@@ -1,0 +1,44 @@
+University of Naples Federico II (UNINA)
+Department of Economics and Statistics
+Course: Statistical Data Analysis
+Academic Year: 2025-2026
+Professors: Prof. Roberta Siciliano & Prof. Giulia Vannucci
+Mohammad Waliullah Shah | P37000087 | UNINA
+
+Assignment 4: Heart Disease Classification Analysis
+
+## Abstract
+This report presents a full classification workflow for heart disease presence using a dataset of 303 patients and 13 predictors. After exploratory analysis and median imputation for missing angiographic values, the outcome was binarized (no disease vs disease). Four classifiers were compared on a stratified 80/20 split with standardized features: Logistic Regression, Linear Discriminant Analysis (LDA), Quadratic Discriminant Analysis (QDA), and a depth-limited Decision Tree (CART). Models used class rebalancing because the two classes are not perfectly equal. Performance was assessed with accuracy, precision, recall, F1-score, confusion matrices, ROC curves, and AUC, plus tree-based feature importance. The results highlight how linear generative models and discriminative logistic regression behave on the same scaled feature space, and how a tree captures non-linear splits.
+
+## 1. Introduction
+Early detection of heart disease supports better clinical decisions. The aim of this assignment is to learn a binary classifier from routinely collected clinical and stress-test variables, compare several statistical learning methods, and interpret their behavior with respect to scaling, class imbalance, and decision boundaries.
+
+## 2. Dataset and EDA
+The heart dataset contains 303 observations. The original target included severity levels 0–4; for this assignment, label 0 means no disease and levels 1–4 are collapsed to a single “disease present” class. Missing values in `ca` and `thal` were replaced by column medians so that all patients enter the modeling stage.
+Class counts after binarization: no disease = 164, disease = 139. Exploratory plots include class distribution, a correlation heatmap, a pair plot on a subset of continuous variables, and bar charts for coded categorical attributes. The heatmap helps detect multicollinearity; the pair plot gives a visual sense of overlap between classes in low-dimensional projections.
+
+## 3. Preprocessing
+Predictors were those 13 feature columns (categorical factors are already numerically coded as in the source file). Data were split 80% train / 20% test with stratification on the binary outcome (`random_state=42`). `StandardScaler` was fit on the training set only and applied to the test set to avoid information leakage. This puts variables on comparable units, which matters strongly for logistic regression, LDA, and QDA; trees are scale-invariant, but a single scaled design matrix keeps the comparison fair.
+Class imbalance was handled with `class_weight='balanced'` in Logistic Regression and the Decision Tree. For LDA and QDA, balanced `sample_weight` vectors were used when supported by the installed scikit-learn version; otherwise equal class priors (0.5, 0.5) were kept as a fallback so the generative fit still reflects concern for unequal class prevalence.
+
+## 4. Models and Results
+**Logistic Regression** estimates a linear score and passes it through a logistic link; its decision boundary is linear in the scaled feature space. **LDA** assumes multivariate normal classes with a common covariance matrix, which yields a linear boundary when priors are equal; it is appropriate when features are roughly normal within each class and dispersion is similar. **QDA** relaxes common covariance, allowing quadratic boundaries—useful when variability differs materially between disease groups, at the cost of more parameters. **CART** with `max_depth=5` and Gini impurity models non-linear interactions via recursive partitioning.
+
+| Model | Accuracy | Precision | Recall | F1 | AUC |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Logistic Regression | 0.8689 | 0.8125 | 0.9286 | 0.8667 | 0.9502 |
+| LDA | 0.8525 | 0.8065 | 0.8929 | 0.8475 | 0.9405 |
+| QDA | 0.8689 | 0.7778 | 1.0000 | 0.8750 | 0.9437 |
+| Decision Tree (CART) | 0.8197 | 0.7742 | 0.8571 | 0.8136 | 0.8198 |
+
+## 5. Discussion
+**Confusion matrices** summarize where each model trades off false alarms and missed cases. **ROC and AUC** integrate performance across thresholds; they are especially informative alongside imbalanced outcomes. **Feature importance** from the tree highlights which variables dominated splits under the chosen depth constraint; importances are relative and sum to one.
+**Effect of scaling:** distance-based and likelihood-based linear models are not invariant to measurement units; scaling prevents a variable with large variance from dominating solely because of its scale. **Decision boundaries:** LR and LDA produce linear separators (in different ways: discriminative vs generative); QDA can curve the boundary; the tree axis-aligned partitions approximate non-linear regions without a single smooth surface.
+
+## 6. Conclusion
+The analysis compared four transparent classifiers on standardized inputs with class rebalancing. The numeric table and ROC figure give a concise ranking by multiple metrics; no single number should be read in isolation on medical data, but together they describe discrimination ability and calibration of errors for this test split.
+
+## References
+- James, G., Witten, D., Hastie, T., & Tibshirani, R. (2021). *An Introduction to Statistical Learning*. Springer.
+- Hastie, T., Tibshirani, R., & Friedman, J. (2009). *The Elements of Statistical Learning*. Springer.
+- Pedregosa, F. et al. (2011). Scikit-learn: Machine Learning in Python. *Journal of Machine Learning Research*.
